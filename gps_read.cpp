@@ -16,41 +16,41 @@
 #include <wiringPi.h>
 
 const int gpsLedPin{ 18 };
+static int count{ 0 };
 
 // Trim leading whitespace
-std::string lstrip(const std::string& s) {
+inline std::string lstrip(const std::string& s) {
     auto it = std::find_if_not(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); });
     return std::string(it, s.end());
 }
 
 // Trim trailing whitespace
-std::string rstrip(const std::string& s) {
+inline std::string rstrip(const std::string& s) {
     auto it = std::find_if_not(s.rbegin(), s.rend(), [](unsigned char c) { return std::isspace(c); }).base();
     return std::string(s.begin(), it);
 }
 
 // Trim leading and trailing whitespace
-std::string strip(const std::string& s) {
+inline std::string strip(const std::string& s) {
     return rstrip(lstrip(s));
 }
 
-std::vector<std::string> split(const std::string& s, char delimiter) {
+std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
     std::vector<std::string> tokens;
     size_t start = 0, end = 0;
     while ((end = s.find(delimiter, start)) != std::string::npos) {
         tokens.push_back(s.substr(start, end - start));
-        start = end + 1;
+        start = end + delimiter.length();
     }
     tokens.push_back(s.substr(start));
-
-
+    
     return tokens;
 }
 
 // Function to parse NMEA sentences
 std::vector<std::string> parseNMEASentence(const std::string& sentence) {
 
-    char delimiter = ',';
+    std::string delimiter = ",";
     std::vector<std::string> fields = split(strip(sentence), delimiter);
 
     return fields;
@@ -77,7 +77,7 @@ std::string getLogFilename() {
 
 // Function to blink the LED a specific number of times
 void blinkLED(int ledPin, int blinkCount) {
-    const int blinkDurationMs = 200; // Each blink lasts 100 ms
+    const int blinkDurationMs = 200; // Each blink lasts 200 ms
     for (int i = 0; i < blinkCount; ++i) {
         digitalWrite(ledPin, HIGH); // Turn the LED on
         std::this_thread::sleep_for(std::chrono::milliseconds(blinkDurationMs)); // Wait for the blink duration
@@ -86,7 +86,6 @@ void blinkLED(int ledPin, int blinkCount) {
     }
 }
 
-static int count{ 0 };
 
 int main(){
 
@@ -110,7 +109,7 @@ int main(){
     options.c_cflag |= (CLOCAL | CREAD);
     tcsetattr(fd, TCSANOW, &options);
 
-    char buf[256];
+    char buf[1024];
 
     std::ofstream logFile; // Declare the log file stream
     std::string logFilename = getLogFilename(); // Get the log filename
@@ -156,14 +155,12 @@ int main(){
                 // Control the LED based on validity
                 if (validity == "A") {
                     // Turn on the LED
-                    // Note: GPIO control requires additional setup and libraries
                     digitalWrite(gpsLedPin, HIGH);
                     std::cout << "LED ON. Validity: " << validity << " Speed:" << speed << std::endl;
                 } 
                 
                 else if (validity == "V") {
                     // Turn off the LED
-                    // Note: GPIO control requires additional setup and libraries
                     digitalWrite(gpsLedPin, LOW);
                     std::cout << "LED OFF. Validity: " << validity << " Speed:" << speed << std::endl;
                 }
