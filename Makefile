@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Wconversion -Wshadow -Wpedantic -std=c++20 -O2
 TARGET = gps_read
 
 # Define source file
-SRCS = gps_read.cpp
+SRCS = gps_read.cpp led.cpp
 
 # Define the linker flags
 LDFLAGS = -li2c -lwiringPi

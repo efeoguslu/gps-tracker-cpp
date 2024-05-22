@@ -15,7 +15,9 @@
 #include <algorithm>
 #include <wiringPi.h>
 
-const int gpsLedPin{ 18 };
+#include "led.h"
+
+
 static int count{ 0 };
 
 // Trim leading whitespace
@@ -75,6 +77,8 @@ std::string getLogFilename() {
     return oss.str();
 }
 
+
+/*
 // Function to blink the LED a specific number of times
 void blinkLED(int ledPin, int blinkCount) {
     const int blinkDurationMs = 200; // Each blink lasts 200 ms
@@ -83,17 +87,23 @@ void blinkLED(int ledPin, int blinkCount) {
         std::this_thread::sleep_for(std::chrono::milliseconds(blinkDurationMs)); // Wait for the blink duration
         digitalWrite(ledPin, LOW); // Turn the LED off
         std::this_thread::sleep_for(std::chrono::milliseconds(blinkDurationMs)); // Wait for the blink duration
-    }
+    }s
 }
+*/
+
+
 
 
 int main(){
 
     // Initialize wiringPi and allow the use of BCM pin numbering
     wiringPiSetupGpio();
-    pinMode(gpsLedPin, OUTPUT);
+    
+    // pinMode(gpsLedPin, OUTPUT);
 
-    blinkLED(gpsLedPin, 3);
+    Led gpsLed{ gpsLedPin }; // Create an LED object for the GPS LED
+
+    // blinkLED(gpsLedPin, 3);
 
     std::string port = "/dev/ttyUSB0";
     int fd = open(port.c_str(), O_RDWR | O_NOCTTY);
@@ -155,13 +165,15 @@ int main(){
                 // Control the LED based on validity
                 if (validity == "A") {
                     // Turn on the LED
-                    digitalWrite(gpsLedPin, HIGH);
+                    // digitalWrite(gpsLedPin, HIGH);
+                    gpsLed.update(true);
                     std::cout << "LED ON. Validity: " << validity << " Speed:" << speed << std::endl;
                 } 
                 
                 else if (validity == "V") {
                     // Turn off the LED
-                    digitalWrite(gpsLedPin, LOW);
+                    // digitalWrite(gpsLedPin, LOW);
+                    gpsLed.update(false);
                     std::cout << "LED OFF. Validity: " << validity << " Speed:" << speed << std::endl;
                 }
             }
